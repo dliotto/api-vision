@@ -1,0 +1,2 @@
+TRAIN, gs://api-automl/2.jpeg, uno, carta, 2
+TEST, gs://api-automl/um_uno.png, uno, carta, 1
