@@ -13,38 +13,49 @@ import fs from 'fs';
 const routes = new Router();
 
 routes.get('/', async (req, res) => {
+  /*
   const client = new vision.ImageAnnotatorClient({
     keyFilename: path.resolve(__dirname,'../','teste-de-texto-268018-884b76d715f2.json')
   });
 
+
+
+  const img = 'farinha.jpg';
+
   // Performs label detection on the image file
-  const [result] = await client.labelDetection(path.resolve(__dirname, '..', 'temp', 'uploads', '2.jpeg'));
+  const [result] = await client.labelDetection(path.resolve(__dirname, '..', 'temp', 'uploads', img));
   const labels = result.labelAnnotations;
   console.log('Labels:');
   labels.forEach(label => console.log(label.description));
 
-  const [result2] = await client.textDetection(path.resolve(__dirname, '..','temp', 'uploads', '2.jpeg'))
+  const [result2] = await client.textDetection(path.resolve(__dirname, '..','temp', 'uploads', img))
   const texts = result2.textAnnotations
   console.log("----------------");
   texts.forEach(text => console.log(text));
 
-  const [result3] = await client.imageProperties(path.resolve(__dirname, '..', 'temp', 'uploads', '2.jpeg'))
+  const [result3] = await client.imageProperties(path.resolve(__dirname, '..', 'temp', 'uploads', img))
   //const texts3 = result3.imagePropertiesAnnotation.dominantColors.colors[0].color;
   const texts3 = result3;
   console.log("********************");
   console.log(texts3);
 
+  return res.json({ message: texts[0].description });
+*/
+
+
   /***Google AutoML***/
 
   const projectId = 'teste-de-texto-268018';
-  const scoreThreshold = '0.5';
+  const scoreThreshold = '0.8';
   const computeRegion = 'us-central1';
   const datasetName = 'myDataset';
   const modelName = 'myModel';
   const multiLabel = true;
   const datasetId = 'ICN3163877694274273280';
   const pathCsv = 'gs://api-automl/api.csv';
+  const modelId = 'ICN8519029286147981312';
   let trainBudget = '50';
+
 
   const clientAuto = new AutoMlClient({
     keyFilename: path.resolve(__dirname,'../','teste-de-texto-268018-884b76d715f2.json')
@@ -129,9 +140,8 @@ routes.get('/', async (req, res) => {
 
   //-----------------------CRIAR MODELO DE TREINAMENTO
   //https://cloud.google.com/vision/automl/docs/tutorial?hl=pt-br
-  const projectLocation = clientAuto.locationPath(projectId, computeRegion);
+  /*const projectLocation = clientAuto.locationPath(projectId, computeRegion);
 
-  // Check train budget condition.
   if (trainBudget === 0) {
     trainBudget = {};
   } else {
@@ -150,26 +160,32 @@ routes.get('/', async (req, res) => {
   });
   console.log(`Training operation name: `, initialApiResponse.name);
   console.log(`Training started...`);
-  const [model] = await operation2.promise();
 
-  let deploymentState = ``;
-  if (model.deploymentState === 1) {
-    deploymentState = `deployed`;
-  } else if (model.deploymentState === 2) {
-    deploymentState = `undeployed`;
-  }
+  if( operation2 ){
+    const [model] = await operation2.promise();
 
-  console.log(`Model name: ${model.name}`);
-  console.log(`Model id: ${model.name.split(`/`).pop(-1)}`);
-  console.log(`Model display name: ${model.displayName}`);
-  console.log(`Model create time:`);
-  console.log(`\tseconds: ${model.createTime.seconds}`);
-  console.log(`\tnanos: ${model.createTime.nanos}`);
-  console.log(`Model deployment state: ${deploymentState}`);
+    if( model ){
+      let deploymentState = ``;
+      if (model.deploymentState === 1) {
+        deploymentState = `deployed`;
+      } else if (model.deploymentState === 2) {
+        deploymentState = `undeployed`;
+      }
+
+      console.log(`Model name: ${model.name}`);
+      console.log(`Model id: ${model.name.split(`/`).pop(-1)}`);
+      console.log(`Model display name: ${model.displayName}`);
+      console.log(`Model create time:`);
+      console.log(`\tseconds: ${model.createTime.seconds}`);
+      console.log(`\tnanos: ${model.createTime.nanos}`);
+      console.log(`Model deployment state: ${deploymentState}`);
+    }
+  }*/
   //FIM MODELO DE TREINAMENTO
 
+//https://console.cloud.google.com/vision/datasets/ICN3163877694274273280/train?project=teste-de-texto-268018
+//https://cloud.google.com/vision/automl/docs/tutorial?hl=pt-br
 
-/*
   const predictionServiceClient = new PredictionServiceClient({
     keyFilename: path.resolve(__dirname,'../','teste-de-texto-268018-884b76d715f2.json')
   });
@@ -177,10 +193,10 @@ routes.get('/', async (req, res) => {
   const modelFullId = predictionServiceClient.modelPath(
     projectId,
     computeRegion,
-    'api-vision-565b1-teste-y5zvng'
+    modelId
   );
 
-  const content = fs.readFileSync(path.resolve(__dirname, '..','temp', 'uploads', '2.jpeg'), `base64`);
+  const content = fs.readFileSync(path.resolve(__dirname, '..','temp', 'uploads', 'garrafa6.jpeg'), `base64`);
   let params = {};
   if (scoreThreshold) {
     params = {
@@ -202,15 +218,24 @@ routes.get('/', async (req, res) => {
     payload: payload,
     params: params,
   });
-  console.log(`Prediction results:`);
-  for (const result of response[0].payload) {
-    console.log(`\nPredicted class name:  ${result.displayName}`);
-    console.log(
-      `Predicted class score:  ${result.imageObjectDetection.score}`
-    );
-  }*/
 
-  return res.json({ message: "Teste" });
+
+  if( response.payload.find( atributo => atributo.displayName === 'garrafa') || response.payload.find( atributo => atributo.displayName === 'garrafas') ){
+    console.log(`Predições:`);
+    for (const result of response.payload) {
+      /*console.log(`\nPredicted class name:  ${result.displayName}`);
+      console.log(
+        `Predicted class score:  ${result.imageObjectDetection}`
+      );*/
+      console.log(`\nAtributo:  ${result.displayName}`);
+      console.log(`Acurácia:  ${Math.round(result.classification.score * 100, 2)}%\n`);
+    }
+  }else{
+    console.log('Não contem garrafa na imagem');
+  }
+
+  return true;
+
 });
 
 //pode utilizar tambem export default routes;
