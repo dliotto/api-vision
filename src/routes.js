@@ -185,6 +185,10 @@ routes.get('/', async (req, res) => {
 
 //https://console.cloud.google.com/vision/datasets/ICN3163877694274273280/train?project=teste-de-texto-268018
 //https://cloud.google.com/vision/automl/docs/tutorial?hl=pt-br
+//https://cloud.google.com/vision/automl/object-detection/docs/label
+//https://cloud.google.com/vision/automl/docs/prepare
+//https://cloud.google.com/vision/automl/docs/predict?hl=pt-br
+//https://googleapis.dev/nodejs/automl/latest/v1.PredictionServiceClient.html
 
   const predictionServiceClient = new PredictionServiceClient({
     keyFilename: path.resolve(__dirname,'../','teste-de-texto-268018-884b76d715f2.json')
